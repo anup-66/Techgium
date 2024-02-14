@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decryption Form</title>
+</head>
+<body>
+    <h1>Decryption Form</h1>
+
+    <form action="/decrypt" method="post" enctype="multipart/form-data">
+        <label for="password">Enter Password:</label>
+        <input type="password" name="password" required><br>
+
+        <label for="mac_address">Enter MAC Address:</label>
+        <input type="text" name="mac_address" required><br>
+
+        <label for="encrypted_data">Select Encrypted File:</label>
+        <input type="file" name="encrypted_data" required><br>
+
+        <button type="submit">Decrypt</button>
+    </form>
+</body>
+</html>
