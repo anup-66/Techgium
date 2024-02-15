@@ -91,7 +91,7 @@ print(derived_key)
 # Encrypt a folder using the derived key
 folder_path = 'E:/techgium_work/photo_test'
 saving_path = 'test_folder'
-# encrypt_folder(folder_path,saving_path, derived_key,username)
+encrypt_folder(folder_path,saving_path, derived_key,username)
 
 # Decrypt the folder using the derived key
 # decrypt_folder(saving_path, derived_key,username)
@@ -100,25 +100,3 @@ import os
 
 from PIL import Image
 
-
-def resize_image(input_image_path, output_image_path, size):
-    """
-    Resize the input image to the specified size.
-
-    Args:
-        input_image_path (str): The file path of the input image.
-        output_image_path (str): The file path where the resized image will be saved.
-        size (tuple): A tuple specifying the desired width and height of the resized image.
-    """
-    with open(input_image_path,"rb") as image:
-        resized_image = image.resize(size)
-        resized_image.save(output_image_path)
-
-size = (256, 256)  # Desired width and height
-output_folder = "test_folder"
-folder_path = "photo_test"
-for img in os.listdir(folder_path):
-    file_path = os.path.join(folder_path,img)
-    if os.path.isfile(file_path):
-        resize_image(folder_path,output_folder,size)
-# resize_image(input_image_path, output_image_path, target_size)

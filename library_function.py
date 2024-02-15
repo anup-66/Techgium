@@ -2,15 +2,17 @@
 import hashlib
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
+from skimage.io import imread
+from skimage.transform import resize
 import numpy as np
 import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from torch.utils.data import DataLoader, Dataset
 import csv
-import io
+import io as ioo
 import uuid
+from skimage import io
 class _EncryptedFile(Dataset):
     def _derive_key(self, username, mac_address):
         # Combine username and MAC address
@@ -49,7 +51,7 @@ class _EncryptedFile(Dataset):
         labels = []
 
         # Create a CSV reader from the CSV data
-        csv_reader = csv.reader(io.StringIO(csv_data))
+        csv_reader = csv.reader(ioo.StringIO(csv_data))
         # Iterate over rows in the CSV data
         info_row = True
         for row in csv_reader:
@@ -95,7 +97,23 @@ class _EncryptedFile(Dataset):
 
             return features, labels
         elif "image" == self.dataType.lower():
-
+            # decrypted_image = self._decrypt_image(encrypted_data)
+            decrypted_image = decrypted_data
+            img = imread(ioo.BytesIO(decrypted_image))
+            label = int(self.file_list[idx].split(".")[0])
+            return img, label  # No labels for image data
+            # images = []
+            # labels = []
+            # for folder_name in os.listdir(folder_path):
+            #     label = int(folder_name)  # Assuming folder names represent class labels
+            #     folder = os.path.join(folder_path, folder_name)
+            #     for filename in os.listdir(folder):
+            #         img_path = os.path.join(folder, filename)
+            #         img = imread(img_path)
+            #         img = resize(img, target_size)  # Resize image to target size
+            #         images.append(img)
+            #         labels.append(label)
+            # return np.array(images), np.array(labels)
 
 
         return decrypted_data
@@ -115,7 +133,8 @@ class _SecureDataLoader:
         encrypted_batch = next(self.encrypted_dataloader)
         # Process the encrypted batch further if needed, but don't expose decrypted data.
         return encrypted_batch
-
+from torchvision.transforms import ToTensor
+from skimage import io, color, transform
 class customModal:
     def __init__(self, model,folder_path,datatype,username,batch_size = 10,shuffle = False):
         self.shuffle = shuffle
@@ -123,22 +142,35 @@ class customModal:
         self.batch_size  = batch_size
         self.dataloader = _SecureDataLoader(folder_path,datatype,username,batch_size = self.batch_size,shuffle = False)
         self.data = [batch for batch in self.dataloader]
-        print(self.data)
-        self.X_train = np.array([value[0] for value in self.data])
-        print(self.X_train)
-        self.y_train = np.array([value[1].numpy() for value in self.data]).reshape(-1,1)
-        print(self.y_train.reshape(-1,1))
+        # print(self.data[0][0][0])
+        # print(len([value for batch in self.data for value in batch[0]]))
+        # self.X_train = np.array([value[0] for value in self.data])
+        # self.y_train = np.array([value[1].numpy() for value in self.data]).reshape(-1,1)
+        self.X_train = np.array([color.rgb2gray(value).flatten() for batch in self.data for value in batch[0]])
+        self.y_train = np.array([value for batch in self.data for value in batch[1]]).reshape(-1, 1)
+        # if datatype.lower()=="image":
+        # Convert image data to tensor format
+        #     self.X_train = self._convert_images_to_tensors(self.X_train)
+
+    def _convert_images_to_tensors(self, images):
+        tensor_images = []
+        for img in images:
+            # print(type(img))
+            # Convert PIL image to tensor
+            tensor_img = ToTensor()(img)
+            tensor_images.append(tensor_img)
+        return np.array(tensor_images)
     def train_model(self):
+        print(np.shape(np.squeeze(self.X_train)))
         # Training logic here
-        print(np.shape(self.X_train))
-        print(np.shape(self.y_train))
         self.model.fit(np.squeeze(self.X_train), self.y_train.reshape(-1,1))
         return self.model
 
     def predict(self,X_test = None):
-        if X_test==None:
+        if X_test is None:
             self.X_test = [[1,2],[2,3]]
         else:
-            self.X_test = X_test
+            self.X_test = np.array(X_test).flatten().reshape(1,-1)
+            print(np.shape(np.array(X_test).flatten().reshape(1,-1)))
         # Prediction logic here
         return self.model.predict(self.X_test)
