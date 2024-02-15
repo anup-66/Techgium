@@ -1,5 +1,7 @@
 
 import hashlib
+
+import torch
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from skimage.io import imread
@@ -128,13 +130,14 @@ class _SecureDataLoader:
 
     def __iter__(self):
         return self
-
+    def __len__(self):
+        return len(self.encrypted_dataloader)
     def __next__(self):
         encrypted_batch = next(self.encrypted_dataloader)
         # Process the encrypted batch further if needed, but don't expose decrypted data.
         return encrypted_batch
 from torchvision.transforms import ToTensor
-from skimage import io, color, transform
+from skimage import io, color
 class customModal:
     def __init__(self, model,folder_path,datatype,username,batch_size = 10,shuffle = False):
         self.shuffle = shuffle
@@ -144,22 +147,13 @@ class customModal:
         self.data = [batch for batch in self.dataloader]
         # print(self.data[0][0][0])
         # print(len([value for batch in self.data for value in batch[0]]))
-        # self.X_train = np.array([value[0] for value in self.data])
-        # self.y_train = np.array([value[1].numpy() for value in self.data]).reshape(-1,1)
-        self.X_train = np.array([color.rgb2gray(value).flatten() for batch in self.data for value in batch[0]])
-        self.y_train = np.array([value for batch in self.data for value in batch[1]]).reshape(-1, 1)
-        # if datatype.lower()=="image":
-        # Convert image data to tensor format
-        #     self.X_train = self._convert_images_to_tensors(self.X_train)
+        if "csv"==datatype.lower():
+            self.X_train = np.array([value[0] for value in self.data])
+            self.y_train = np.array([value[1].numpy() for value in self.data]).reshape(-1,1)
+        elif "image"==datatype.lower():
+            self.X_train = np.array([color.rgb2gray(value).flatten() for batch in self.data for value in batch[0]])
+            self.y_train = np.array([value for batch in self.data for value in batch[1]]).reshape(-1, 1)
 
-    def _convert_images_to_tensors(self, images):
-        tensor_images = []
-        for img in images:
-            # print(type(img))
-            # Convert PIL image to tensor
-            tensor_img = ToTensor()(img)
-            tensor_images.append(tensor_img)
-        return np.array(tensor_images)
     def train_model(self):
         print(np.shape(np.squeeze(self.X_train)))
         # Training logic here
@@ -174,3 +168,43 @@ class customModal:
             print(np.shape(np.array(X_test).flatten().reshape(1,-1)))
         # Prediction logic here
         return self.model.predict(self.X_test)
+
+class customDlModel:
+    def __init__(self,model,loss_function,optimiser,num_epochs,train_folder_path,test_folder_path,datatype,username,batch_size):
+        self.model = model
+        self.loss_function = loss_function
+        self.optimiser = optimiser
+        self.num_epochs = num_epochs
+        self.train_folder_path = train_folder_path
+        self.test_folder_path = test_folder_path
+        self.username = username
+        self.datatype = datatype
+        self.batch_size = batch_size
+        self.train_loader = _SecureDataLoader(self.train_folder_path, self.datatype, self.username, self.batch_size, shuffle=False)
+        self.test_loader =  _SecureDataLoader(self.test_folder_path, self.datatype, self.username, self.batch_size, shuffle=False)
+    def train(self):
+
+        for epoch in range(self.num_epochs):
+            running_loss = 0.0
+            for images,labels in self.train_loader:
+                print(np.shape(images))
+                print(np.shape(labels))
+
+                self.optimiser.zero_grad()
+                # print(type(images))
+                outputs = self.model(images.to(torch.float32))
+                loss = self.loss_function(outputs,labels)
+                loss.backward()
+                self.optimiser.step()
+                running_loss+=loss.item()
+            print(f"Epoch {epoch + 1},Loss:{running_loss/len(self.train_loader)}")
+
+        with torch.no_grad():
+            correct = 0
+            total = 0
+            for images, labels in self.test_loader:
+                outputs = self.model(images.to(torch.float32))
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            print(f"Accuracy: {100 * correct / total}%")
