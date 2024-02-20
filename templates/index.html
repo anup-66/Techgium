@@ -1,107 +1,80 @@
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>{{ folder_name }}</title>-->
+<!--    <link rel="stylesheet" href="static/style.css">-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>{{ folder_name }}</h1>-->
+<!--    <div class="folders-container">-->
+<!--        {% for folder in folders %}-->
+<!--            <div class="folder-card">-->
+<!--                <img src="{{ url_for('static', filename='folder_icon.jpg') }}" alt="Folder Icon">-->
+<!--                <div class="folder-details">-->
+<!--                    <p class="folder-name">{{ folder_name }}</p>-->
+<!--                    <p class="folder-description">{{ "jijijiij" }}</p>-->
+<!--                </div>-->
+<!--                <div class="buttons">-->
+<!--                    <a href="{{ url_for('download_folder', folder_name='image_dataset') }}" class="button">Download</a>-->
+<!--                    <a href="{{ url_for('view_folder', folder_name='images_dataset') }}" class="button">View</a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        {% endfor %}-->
+<!--    </div>-->
+<!--</body>-->
+<!--</html>-->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Encryption App</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f4f4f4;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    .container {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+        .container {
+            text-align: center;
+        }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-    }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      background-color: #4caf50;
-      color: #fff;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Encryption App</h1>
-    <form id="encryptionForm">
-      <label for="username">Username:</label>
-      <input type="text" id="username" name="username" required>
+    <div class="container">
+        <h1>CSV Viewer</h1>
+        <button onclick="viewCSV()">View CSV</button>
+    </div>
 
-      <label for="macAddress">MAC Address:</label>
-      <input type="text" id="macAddress" name="macAddress" required>
-
-      <button type="button" onclick="encryptFolder()">Encrypt</button>
-    </form>
-  </div>
-
-  <script>
-    function encryptFolder() {
-      const username = document.getElementById('username').value;
-      const macAddress = document.getElementById('macAddress').value;
-
-      // Validate inputs
-      if (!username || !macAddress) {
-        alert('Please enter both username and MAC address.');
-        return;
-      }
-
-      // Mock encryption API endpoint (replace with your actual endpoint)
-      const apiUrl = 'http://localhost:5000/encrypt';
-
-      // Create a FormData object and append the username and MAC address
-      const formData = new FormData();
-      formData.append('username', username);
-      formData.append('mac_address', macAddress);
-
-      // Send a POST request to the backend API
-      fetch(apiUrl, {
-        method: 'POST',
-        body: formData,
-      })
-
-      .then(response => {
-        console.log(response);
-        if (response.ok) {
-          alert('Encryption successful! Check the server output folder.');
-        } else {
-          alert('Encryption failed. Check the console for details.');
-          console.error(response.statusText);
+    <script>
+        function viewCSV() {
+            // Redirect to the CSV view page
+            window.location.href = "/view_csv";
         }
-      })
-      .catch(error => {
-        alert('An error occurred. Check the console for details.');
-        console.error(error);
-      });
-      // console.log(response);
-    }
-  </script>
+    </script>
 </body>
 </html>

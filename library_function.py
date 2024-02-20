@@ -5,16 +5,15 @@ import torch
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from skimage.io import imread
-from skimage.transform import resize
 import numpy as np
 import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 import csv
 import io as ioo
 import uuid
-from skimage import io
+from skimage import color
 class _EncryptedFile(Dataset):
     def _derive_key(self, username, mac_address):
         # Combine username and MAC address
@@ -67,13 +66,11 @@ class _EncryptedFile(Dataset):
                 labels.append(int(row[-1]))  # Convert labels to integers
 
         labels = np.ravel(labels)
-        print(features)
-        print(labels)
-        # Convert 1D arrays to tensors
-        # features_tensor = numeric_labels
+        # labels = np.array(labels)
         features_tensor = features
         labels_tensor = labels
-
+        print(np.shape(features),"helllllllllll")
+        print(np.shape(labels))
         return features_tensor, labels_tensor
 
     def __getitem__(self, idx):
@@ -96,37 +93,27 @@ class _EncryptedFile(Dataset):
                 csv_string +=""
             # Parse the CSV data and extract features and labels
             features, labels = self._parse_csv_data(csv_string)
-
+            print("features",features,np.shape(labels))
             return features, labels
         elif "image" == self.dataType.lower():
             # decrypted_image = self._decrypt_image(encrypted_data)
             decrypted_image = decrypted_data
             img = imread(ioo.BytesIO(decrypted_image))
             label = int(self.file_list[idx].split(".")[0])
-            return img, label  # No labels for image data
-            # images = []
-            # labels = []
-            # for folder_name in os.listdir(folder_path):
-            #     label = int(folder_name)  # Assuming folder names represent class labels
-            #     folder = os.path.join(folder_path, folder_name)
-            #     for filename in os.listdir(folder):
-            #         img_path = os.path.join(folder, filename)
-            #         img = imread(img_path)
-            #         img = resize(img, target_size)  # Resize image to target size
-            #         images.append(img)
-            #         labels.append(label)
-            # return np.array(images), np.array(labels)
 
-
+            return img, label
         return decrypted_data
 
 class _SecureDataLoader:
-    def __init__(self, folder_path,datatype,username,batch_size = 10,shuffle = False):
+    def __init__(self, folder_path,datatype,username,batch_size = 1,shuffle = False):
         # self.encrypted_dataloader = encrypted_dataloader
         self.encrypted_dataset = _EncryptedFile(folder_path, datatype, username)
-        self.encrypted_dataloader = iter(DataLoader(self.encrypted_dataset, batch_size=batch_size, shuffle=shuffle))
-
-        # self.encrypted_dataloader = self.encrypted_dataloader)
+        self.X_train, self.y_train = zip(*_EncryptedFile(folder_path, datatype, username))
+        print(np.shape(torch.Tensor(self.X_train)), "x_train")
+        print(np.shape(self.y_train), "y_train")
+        self.dataset = TensorDataset(torch.Tensor(np.squeeze(self.X_train)), torch.Tensor(np.squeeze(self.y_train)))
+        print(self.dataset)
+        self.encrypted_dataloader = iter(DataLoader(self.dataset, batch_size=batch_size, shuffle=shuffle))
 
     def __iter__(self):
         return self
@@ -136,20 +123,26 @@ class _SecureDataLoader:
         encrypted_batch = next(self.encrypted_dataloader)
         # Process the encrypted batch further if needed, but don't expose decrypted data.
         return encrypted_batch
-from torchvision.transforms import ToTensor
-from skimage import io, color
+
 class customModal:
-    def __init__(self, model,folder_path,datatype,username,batch_size = 10,shuffle = False):
+    def __init__(self, model,folder_path,datatype,username,batch_size = 1,shuffle = False):
         self.shuffle = shuffle
         self.model = model
         self.batch_size  = batch_size
         self.dataloader = _SecureDataLoader(folder_path,datatype,username,batch_size = self.batch_size,shuffle = False)
         self.data = [batch for batch in self.dataloader]
-        # print(self.data[0][0][0])
-        # print(len([value for batch in self.data for value in batch[0]]))
+        print(self.data)
+        self.X_train = []
+        self.y_train = []
         if "csv"==datatype.lower():
-            self.X_train = np.array([value[0] for value in self.data])
-            self.y_train = np.array([value[1].numpy() for value in self.data]).reshape(-1,1)
+            for batch in self.data:
+                # Extend X_train with each feature tensor separately
+                self.X_train.extend([value.numpy() for value in batch[0]])
+                # Extend y_train with each label tensor
+                self.y_train.extend(batch[1].numpy())
+                # Convert lists to NumPy arrays
+            self.X_train = np.array(self.X_train)
+            self.y_train = np.array(self.y_train).reshape(-1, 1)
         elif "image"==datatype.lower():
             self.X_train = np.array([color.rgb2gray(value).flatten() for batch in self.data for value in batch[0]])
             self.y_train = np.array([value for batch in self.data for value in batch[1]]).reshape(-1, 1)
@@ -180,31 +173,77 @@ class customDlModel:
         self.username = username
         self.datatype = datatype
         self.batch_size = batch_size
+        # self.X_train,self.y_train = zip(*_EncryptedFile(self.train_folder_path,self.datatype,self.username))
+        # print(np.shape(torch.Tensor(self.X_train)),"x_train")
+        # print(np.shape(self.y_train),"y_train")
+        # self.dataset = TensorDataset(torch.Tensor(np.squeeze(self.X_train)),torch.Tensor(np.squeeze(self.y_train)))
+        # print(self.dataset)
         self.train_loader = _SecureDataLoader(self.train_folder_path, self.datatype, self.username, self.batch_size, shuffle=False)
         self.test_loader =  _SecureDataLoader(self.test_folder_path, self.datatype, self.username, self.batch_size, shuffle=False)
-    def train(self):
+        # self.train_loader = DataLoader(self.dataset,batch_size = 1,shuffle=False)
+    def train_model(self):
 
-        for epoch in range(self.num_epochs):
-            running_loss = 0.0
-            for images,labels in self.train_loader:
-                print(np.shape(images))
-                print(np.shape(labels))
+        if self.datatype.lower() == "image":
+            for epoch in range(self.num_epochs):
+                running_loss = 0.0
+                for images, labels in self.train_loader:
+                    print(np.shape(images))
+                    print(np.shape(labels))
+                    labels = labels.long()
+                    self.optimiser.zero_grad()
+                    labels -= 1
+                    images = images.permute(0, 3, 1, 2)
+                    outputs = self.model(images.to(torch.float32))
+                    loss = self.loss_function(outputs, labels)
+                    loss.backward()
+                    self.optimiser.step()
+                    running_loss += loss.item()
+                print(f"Epoch {epoch + 1}, Loss: {running_loss / len(self.train_loader)}")
 
-                self.optimiser.zero_grad()
-                # print(type(images))
-                outputs = self.model(images.to(torch.float32))
-                loss = self.loss_function(outputs,labels)
-                loss.backward()
-                self.optimiser.step()
-                running_loss+=loss.item()
-            print(f"Epoch {epoch + 1},Loss:{running_loss/len(self.train_loader)}")
+            with torch.no_grad():
+                correct = 0
+                total = 0
+                for images, labels in self.test_loader:
+                    labels -= 1
+                    images = images.permute(0, 3, 1, 2)
+                    labels = labels.long()
+                    outputs = self.model(images.to(torch.float32))
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+                print(f"Accuracy: {100 * correct / total}%")
+        elif self.datatype.lower() == "csv":
+            for epoch in range(self.num_epochs):
+                running_loss = 0.0
+                print("lplplpl",len(self.train_loader))
+                for features, labels in self.train_loader:
+                    labels = labels.long()
+                    print("here")
+                    print(np.shape(features))
+                    print(np.shape(labels))
+                    print(np.shape(labels),"uhuhuhh")
 
-        with torch.no_grad():
-            correct = 0
-            total = 0
-            for images, labels in self.test_loader:
-                outputs = self.model(images.to(torch.float32))
-                _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-            print(f"Accuracy: {100 * correct / total}%")
+                    self.optimiser.zero_grad()
+                    # labels -= 1  # Adjust labels to start from 0
+                    outputs = self.model(torch.tensor(features,dtype=torch.float32))
+                    print(np.shape(outputs))
+                    print(np.shape(labels))
+                    print("jijijijiiijijiji",np.shape(labels))
+                    loss = self.loss_function(outputs, labels)
+                    loss.backward()
+                    self.optimiser.step()
+                    running_loss += loss.item()
+                print(f"Epoch {epoch + 1}, Loss: {running_loss / len(self.train_loader)}")
+
+            with torch.no_grad():
+                correct = 0
+                total = 0
+                for features, labels in self.test_loader:
+                    labels = labels.long()
+                    outputs = self.model(features.to(torch.float32))
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+                print(f"Accuracy: {100 * correct / total}%")
+
+

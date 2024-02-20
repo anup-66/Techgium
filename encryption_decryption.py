@@ -89,7 +89,7 @@ derived_key = derive_key(username, mac_address)
 print(derived_key)
 # derived_key = b"\x84k-\x11\xe0\xcd\x99Q\x13!M\xc2a\x06Y\x85\xa6\xcd\xf0\xfe:\xc1/\xf3\xa8t\xc2Ii\xf3F\xf5"
 # Encrypt a folder using the derived key
-folder_path = 'E:/techgium_work/photo_test'
+folder_path = 'E:/techgium_work/test_folder'
 saving_path = 'test_folder'
 encrypt_folder(folder_path,saving_path, derived_key,username)
 
