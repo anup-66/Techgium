@@ -245,5 +245,3 @@ class customDlModel:
                     total += labels.size(0)
                     correct += (predicted == labels).sum().item()
                 print(f"Accuracy: {100 * correct / total}%")
-
-

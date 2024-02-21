@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { elastic as Menu } from "react-burger-menu";
 import "../Homepage Components/Sidebar.css";
+// import { ReactDOM } from "react";
 import { FaUser } from "react-icons/fa";
 import { IoMdHome } from "react-icons/io";
-
+// import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
 function Navbar() {
   const sentences = [
     "Explore Datasets",
     "Exclusive Datasets Just For You",
     "Track Your Datasets",
   ];
+  // const history = useNavigate();
+  // const handleViewCSV = () => {
+  //   history.push("/csvdata");
+  // };
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -53,10 +59,16 @@ function Navbar() {
       <div className="h-[100px] border-b-2 bg-teal-800 opacity-90 flex items-center justify-center shadow-2xl">
         <ul className="text-[22px] font-mono font-semibold flex text-white">
           <li className="p-8 hover:underline hover:cursor-pointer">Home</li>
+          <Link to="/Dashboard">
           <li className="p-8 hover:underline hover:cursor-pointer">
-            Dashboard
+
+              Dashboard
           </li>
-          <li className="p-8 hover:underline hover:cursor-pointer">Datasets</li>
+         </Link>
+          <Link to="/Datasets">
+            <li className="p-8 hover:underline hover:cursor-pointer">Datasets</li>
+          </Link>
+
         </ul>
         <Menu className="bg-[#373a47] p-3">
           <a className="menu-item mt-[40px] text-[20px] font-mono" href="/">
@@ -64,13 +76,13 @@ function Navbar() {
           </a>
           <a
             className="menu-item mt-[20px] text-[20px] font-mono"
-            href="/salads"
+            href="/"
           >
             Dashboard
           </a>
           <a
             className="menu-item mt-[20px] text-[20px] font-mono"
-            href="/pizzas"
+            href="/"
           >
             Your Datasets
           </a>
@@ -119,7 +131,7 @@ function Navbar() {
       <div className="ml-[80px] absolute mt-[220px] border-2 w-[1350px] h-[400px]">
         <div className="flex">
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[20px]">
-            Textual Datasets
+            CSV Datasets
           </h3>
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[1000px]">
             View All-
@@ -128,9 +140,13 @@ function Navbar() {
         <div className="grid grid-cols-4 grid-row-1 gap-3 ml-[15px] mt-[20px]">
           <div className="border-2 w-[300px] h-[300px]">
             <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
+              <Link to={"/CSVViewPage"} state = {"/Text_datasets/soil.csv"}>
+              <button
+                className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border"
+              >
                 View
               </button>
+              </Link>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 Download
               </button>
@@ -138,9 +154,11 @@ function Navbar() {
           </div>
           <div className="border-2 w-[300px] h-[300px]">
             <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
+              <Link to={"/CSVViewPage"} state = {"stock.csv"}>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 View
               </button>
+              </Link>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 Download
               </button>
@@ -172,58 +190,6 @@ function Navbar() {
         <div className="flex">
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[20px]">
             Image Datasets
-          </h3>
-          <h3 className="text-[20px] font-mono underline mt-[10px] ml-[1000px]">
-            View All-
-          </h3>
-        </div>
-        <div className="grid grid-cols-4 grid-row-1 gap-3 ml-[15px] mt-[20px]">
-          <div className="border-2 w-[300px] h-[300px]">
-            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                View
-              </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
-            </div>
-          </div>
-          <div className="border-2 w-[300px] h-[300px]">
-            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                View
-              </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
-            </div>
-          </div>
-          <div className="border-2 w-[300px] h-[300px]">
-            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                View
-              </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
-            </div>
-          </div>
-          <div className="border-2 w-[300px] h-[300px]">
-            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                View
-              </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="ml-[80px] absolute mt-[1060px] border-2 w-[1350px] h-[400px]">
-        <div className="flex">
-          <h3 className="text-[20px] font-mono underline mt-[10px] ml-[20px]">
-            Audio Datasets
           </h3>
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[1000px]">
             View All-

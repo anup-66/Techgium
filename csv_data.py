@@ -111,7 +111,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import SGDClassifier
 
 from sklearn.ensemble import AdaBoostClassifier
-
+test_folder = folder_path
 model = customModal(clone(SVC()),folder_path,"csv",username = username,batch_size=5)
 
 model.train_model()
