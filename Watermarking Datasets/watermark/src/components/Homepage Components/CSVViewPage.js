@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
+import {useLocation} from "react-router-dom";
 // import {useParams} from "react-router-dom";
+// import {loca}
 function CSVViewPage() {
   const [data, setData] = useState([]);
-  // const {folder} = useParams();
-  // console.log(folder);
-  // const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const folder = location.state.folder;
+  const file = location.state.data;
+  console.log(folder);
+  console.log(file);
+
   useEffect(()=>{
 
-    fetch(`http://localhost:5000/csvdata?folder=${folder}file = ${file}`)
+    fetch(`http://localhost:5000/csvdata?folder=${folder}&file=${file}`)
       .then((res) => res.json()
       .then((data) => {
         setData(data);

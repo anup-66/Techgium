@@ -6,16 +6,16 @@ import { FaUser } from "react-icons/fa";
 import { IoMdHome } from "react-icons/io";
 // import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom';
+import axios from "axios";
 function Navbar() {
   const sentences = [
     "Explore Datasets",
     "Exclusive Datasets Just For You",
     "Track Your Datasets",
   ];
-  // const history = useNavigate();
-  // const handleViewCSV = () => {
-  //   history.push("/csvdata");
-  // };
+  const csv_folder = "Text_dataset";
+  // const [csv_folder,setFolder] = useState("Text_dataset");
+  const [files, setFiles] = useState(['soil','stock','booking','health']);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
@@ -54,45 +54,93 @@ function Navbar() {
     return () => clearInterval(intervalId);
   }, [currentSentenceIndex, isTyping, sentences]);
 
+  const handleDownloadFolder = async (folder, data) => {
+    try {
+      console.log(folder)
+      console.log(data)
+      const response = await axios.get(`http://localhost:5000/download?folder=${folder}&data=${data}`, { responseType: 'blob' }); // Ensure the response type is blob for file downloads
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${folder}.zip`); // You might want to give a more meaningful name based on folder/data
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error('Error downloading folder:', error);
+    }
+  };
+
   return (
     <div>
       <div className="h-[100px] border-b-2 bg-teal-800 opacity-90 flex items-center justify-center shadow-2xl">
-        <ul className="text-[22px] font-mono font-semibold flex text-white">
-          <li className="p-8 hover:underline hover:cursor-pointer">Home</li>
-          <Link to="/Dashboard">
-          <li className="p-8 hover:underline hover:cursor-pointer">
+      {/*  <ul className="text-[22px] font-mono font-semibold flex text-white">*/}
+      {/*    <li className="p-8 hover:underline hover:cursor-pointer">Home</li>*/}
+      {/*    <Link to="/Dashboard">*/}
+      {/*    <li className="p-8 hover:underline hover:cursor-pointer">*/}
 
-              Dashboard
+      {/*        Dashboard*/}
+      {/*    </li>*/}
+      {/*   </Link>*/}
+      {/*    <Link to="/Datasets">*/}
+      {/*      <li className="p-8 hover:underline hover:cursor-pointer">Datasets</li>*/}
+      {/*    </Link>*/}
+
+      {/*  </ul>*/}
+      {/*  <Menu className="bg-[#373a47] p-3">*/}
+      {/*    <a className="menu-item mt-[40px] text-[20px] font-mono" href="/">*/}
+      {/*      Your Profile*/}
+      {/*    </a>*/}
+      {/*    <a*/}
+      {/*      className="menu-item mt-[20px] text-[20px] font-mono"*/}
+      {/*      href="/"*/}
+      {/*    >*/}
+      {/*      Dashboard*/}
+      {/*    </a>*/}
+      {/*    <a*/}
+      {/*      className="menu-item mt-[20px] text-[20px] font-mono"*/}
+      {/*      href="/"*/}
+      {/*    >*/}
+      {/*      Your Datasets*/}
+      {/*    </a>*/}
+      {/*    <a*/}
+      {/*      className="menu-item mt-[20px] text-[20px] font-mono"*/}
+      {/*      href="/desserts"*/}
+      {/*    >*/}
+      {/*      Get Verified!*/}
+      {/*    </a>*/}
+      {/*    <button className="menu-item p-4 border mt-[40px] text-[20px] rounded ml-[20px] font-mono bg-teal-800">*/}
+      {/*      Sign Out*/}
+      {/*    </button>*/}
+      {/*  </Menu>*/}
+      {/*</div>*/}
+      {/*<div className="h-16 border-b-2 bg-teal-800 opacity-90 flex items-center justify-between shadow-2xl">*/}
+        <ul className="text-white text-lg font-semibold flex space-x-8 ml-8">
+          <li className="hover:underline">
+            <Link to="/" className="hover:text-gray-300">Home</Link>
           </li>
-         </Link>
-          <Link to="/Datasets">
-            <li className="p-8 hover:underline hover:cursor-pointer">Datasets</li>
-          </Link>
-
+          <li className="hover:underline">
+            <Link to="/Dashboard" className="hover:text-gray-300">Dashboard</Link>
+          </li>
+          <li className="hover:underline">
+            <Link to="/Datasets" className="hover:text-gray-300">Datasets</Link>
+          </li>
         </ul>
-        <Menu className="bg-[#373a47] p-3">
-          <a className="menu-item mt-[40px] text-[20px] font-mono" href="/">
+        <Menu className="bg-gray-800 p-3">
+          <a className="menu-item text-lg font-semibold text-gray-300" href="/">
+            <Link to ={"/profile"}>
             Your Profile
+              </Link>
           </a>
-          <a
-            className="menu-item mt-[20px] text-[20px] font-mono"
-            href="/"
-          >
+          <a className="menu-item text-lg font-semibold text-gray-300" href="/">
             Dashboard
           </a>
-          <a
-            className="menu-item mt-[20px] text-[20px] font-mono"
-            href="/"
-          >
+          <a className="menu-item text-lg font-semibold text-gray-300" href="/">
             Your Datasets
           </a>
-          <a
-            className="menu-item mt-[20px] text-[20px] font-mono"
-            href="/desserts"
-          >
+          <a className="menu-item text-lg font-semibold text-gray-300" href="/">
             Get Verified!
           </a>
-          <button className="menu-item p-4 border mt-[40px] text-[20px] rounded ml-[20px] font-mono bg-teal-800">
+          <button className="menu-item p-2 border text-lg font-semibold text-gray-300 bg-teal-800">
             Sign Out
           </button>
         </Menu>
@@ -133,32 +181,46 @@ function Navbar() {
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[20px]">
             CSV Datasets
           </h3>
+          <Link to={"/DatasetType"} state={{folder:"Text_dataset"}}>
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[1000px]">
             View All-
           </h3>
+          </Link>
         </div>
         <div className="grid grid-cols-4 grid-row-1 gap-3 ml-[15px] mt-[20px]">
           <div className="border-2 w-[300px] h-[300px]">
             <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <Link to={"/CSVViewPage"} state = {"/Text_datasets/soil.csv"}>
+              <Link to={"/CSVViewPage"} state = {{folder:csv_folder,data:files[0]}}>
               <button
                 className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border"
               >
                 View
               </button>
               </Link>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
+              <button  onClick={() => {handleDownloadFolder(csv_folder,files[0])}} className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 Download
               </button>
             </div>
           </div>
           <div className="border-2 w-[300px] h-[300px]">
             <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <Link to={"/CSVViewPage"} state = {"stock.csv"}>
+              <Link to={"/CSVViewPage"} state = {{folder:csv_folder,data:files[1]}}>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 View
               </button>
               </Link>
+              <button onClick={() => {handleDownloadFolder(csv_folder,files[1])}} className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
+                Download
+              </button>
+            </div>
+          </div>
+          <div className="border-2 w-[300px] h-[300px]">
+            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
+              <Link to={"/CSVViewPage"} state = {{folder:csv_folder,data:files[2]}}>
+              <button onClick={() => {handleDownloadFolder(csv_folder,files[2])}} className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
+                View
+              </button>
+                </Link>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 Download
               </button>
@@ -166,20 +228,12 @@ function Navbar() {
           </div>
           <div className="border-2 w-[300px] h-[300px]">
             <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
+              <Link to={"/CSVViewPage"} state = {{folder:csv_folder,data:files[3]}}>
               <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 View
               </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
-            </div>
-          </div>
-          <div className="border-2 w-[300px] h-[300px]">
-            <div className="h-[60px] w-full border-t-2 mt-[240px] flex">
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                View
-              </button>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
+                </Link>
+              <button onClick={() => {handleDownloadFolder(csv_folder,files[3])}} className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
                 Download
               </button>
             </div>
@@ -191,9 +245,11 @@ function Navbar() {
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[20px]">
             Image Datasets
           </h3>
+          <Link to={"/DatasetType"} state={{folder:"images_dataset"}}>
           <h3 className="text-[20px] font-mono underline mt-[10px] ml-[1000px]">
             View All-
           </h3>
+          </Link>
         </div>
         <div className="grid grid-cols-4 grid-row-1 gap-3 ml-[15px] mt-[20px]">
           <div className="border-2 w-[300px] h-[300px]">
@@ -243,3 +299,9 @@ function Navbar() {
 }
 
 export default Navbar;
+
+
+
+
+
+

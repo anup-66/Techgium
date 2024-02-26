@@ -100,8 +100,8 @@
 
 from sklearn.base import clone
 username = 'Anup_66'
-folder_path = 'E:/techgium_work/test_folder'
-
+# folder_path = 'E:/techgium_work/test_folder'
+folder_path = "C:/Users/Anup/Downloads/images_dataset (1)"
 from privyml import customModal
 
 from sklearn.svm import SVC
@@ -112,10 +112,10 @@ from sklearn.linear_model import SGDClassifier
 
 from sklearn.ensemble import AdaBoostClassifier
 test_folder = folder_path
-model = customModal(clone(SVC()),folder_path,"csv",username = username,batch_size=5)
+model = customModal(clone(SVC()),folder_path,"image",username = username,batch_size=5)
 
 model.train_model()
-
-pred = model.predict([[5,6,7]])
-print(pred)
+print(model)
+# pred = model.predict([[5,6,7]])
+# print(pred)
 

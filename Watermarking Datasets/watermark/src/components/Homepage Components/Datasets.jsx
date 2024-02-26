@@ -17,10 +17,8 @@ function Datasets() {
         console.error("Error fetching folders:", error);
       });
   }, []);
-// s i k
   return (
     <div>
-      {/* Other content */}
       <div className="grid grid-cols-4 grid-row-1 gap-3 ml-[15px] mt-[20px]">
         {folders.map((folder, index) => (
           <div key={index} className="border-2 w-[300px] h-[300px]">
@@ -29,12 +27,10 @@ function Datasets() {
                 {/*<Link to={`/DatasetType?name=${folder}`}>*/}
               <Link to={'/DatasetType'} state ={{folder}}>
                 <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                  View
+                  View All
                 </button>
               </Link>
-              <button className="w-[150px] bg-teal-800 h-full flex text-center items-center justify-center text-[22px] text-white border">
-                Download
-              </button>
+
             </div>
           </div>
         ))}

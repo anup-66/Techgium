@@ -96,7 +96,4 @@ encrypt_folder(folder_path,saving_path, derived_key,username)
 # Decrypt the folder using the derived key
 # decrypt_folder(saving_path, derived_key,username)
 
-import os
-
-from PIL import Image
 

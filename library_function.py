@@ -182,7 +182,6 @@ class customDlModel:
         self.test_loader =  _SecureDataLoader(self.test_folder_path, self.datatype, self.username, self.batch_size, shuffle=False)
         # self.train_loader = DataLoader(self.dataset,batch_size = 1,shuffle=False)
     def train_model(self):
-
         if self.datatype.lower() == "image":
             for epoch in range(self.num_epochs):
                 running_loss = 0.0
